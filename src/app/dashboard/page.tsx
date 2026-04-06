@@ -1,9 +1,9 @@
 "use client";
 
-import React, { motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { Search, Filter, Plus, MapPin, Recycle, ExternalLink, Heart } from "lucide-react";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 
 const CATEGORIES = ["Hogar", "Herramientas", "Ropa", "Servicios", "Otros"];
