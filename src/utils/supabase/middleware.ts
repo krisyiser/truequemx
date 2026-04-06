@@ -1,15 +1,14 @@
-import { createServerClient } from "@supabase/ssr";
-import { type NextRequest, NextResponse } from "next/server";
+import { createServerClient } from '@supabase/ssr'
+import { NextResponse, type NextRequest } from 'next/server'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co";
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "placeholder";
-
-export const updateSession = async (request: NextRequest) => {
+export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
-    request: {
-      headers: request.headers,
-    },
-  });
+    request,
+  })
+
+  // Build hardening: fallback to placeholders if env vars are missing
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder'
 
   const supabase = createServerClient(
     supabaseUrl,
@@ -29,10 +28,12 @@ export const updateSession = async (request: NextRequest) => {
           )
         },
       },
-    },
-  );
+    }
+  )
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
   if (
     !user &&
@@ -46,4 +47,4 @@ export const updateSession = async (request: NextRequest) => {
   }
 
   return supabaseResponse
-};
+}
