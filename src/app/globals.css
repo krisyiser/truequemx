@@ -5,27 +5,64 @@
 :root {
   --emerald: #10b981;
   --emerald-dark: #059669;
-  --glass: rgba(16, 185, 129, 0.05);
-  --glass-border: rgba(16, 185, 129, 0.1);
+  --aurora-1: rgba(16, 185, 129, 0.15);
+  --aurora-2: rgba(16, 185, 129, 0.08);
+  --glass: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(255, 255, 255, 0.08);
 }
 
 body {
-  background-color: #0a0a0a;
-  color: #ffffff;
+  background-color: #030303;
+  color: #f8fafc;
+  overflow-x: hidden;
 }
 
 @layer components {
   .glass {
-    @apply bg-[var(--glass)] border border-[var(--glass-border)] backdrop-blur-md rounded-2xl;
+    @apply bg-white/5 border border-white/10 backdrop-blur-xl rounded-3xl;
+  }
+  
+  .glass-card {
+    @apply bg-[#0f171e]/40 border border-white/5 backdrop-blur-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.8)] rounded-3xl;
+  }
+
+  .premium-input {
+    @apply w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500/40 transition-all duration-300;
+  }
+
+  .premium-button {
+    @apply relative overflow-hidden px-8 py-4 rounded-2xl font-bold transition-all duration-300 active:scale-95 disabled:opacity-70;
   }
 }
 
-.emerald-gradient {
-  background: linear-gradient(135deg, var(--emerald) 0%, var(--emerald-dark) 100%);
+.aurora {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+  background: 
+    radial-gradient(circle at 0% 0%, var(--aurora-1) 0%, transparent 40%),
+    radial-gradient(circle at 100% 100%, var(--aurora-1) 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, var(--aurora-2) 0%, transparent 60%);
+  filter: blur(100px);
 }
 
-.emerald-text-gradient {
-  background: linear-gradient(135deg, #34d399 0%, #059669 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+.emerald-gradient {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
 }
+
+.emerald-glow {
+  box-shadow: 0 0 20px 5px rgba(16, 185, 129, 0.15);
+}
+
+.text-gradient {
+  @apply bg-clip-text text-transparent bg-gradient-to-br from-white to-white/60;
+}
+
+.text-emerald-gradient {
+  @apply bg-clip-text text-transparent bg-gradient-to-br from-emerald-400 to-emerald-600;
+}
+
