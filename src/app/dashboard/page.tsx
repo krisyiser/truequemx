@@ -3,19 +3,40 @@
 import { motion } from "framer-motion";
 import { Search, Filter, Plus, MapPin, Recycle, ExternalLink, Heart } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
 
 const CATEGORIES = ["Hogar", "Herramientas", "Ropa", "Servicios", "Otros"];
 
 export default function Dashboard() {
   const [selectedCategory, setSelectedCategory] = useState("Todos");
+  const [items, setItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const mockItems = [
-    { id: 1, title: "Kit de Herramientas Bosch", category: "Herramientas", looking_for: "Pintura blanca", image: "https://lh3.googleusercontent.com/d/1", distance: "2.5 km", owner: "Juan P.", points: 85 },
-    { id: 2, title: "Bicicleta de Montaña R26", category: "Otros", looking_for: "Taladro o Sierra", image: "https://lh3.googleusercontent.com/d/2", distance: "1.2 km", owner: "María G.", points: 120 },
-    { id: 3, title: "Mesa de Madera Rústica", category: "Hogar", looking_for: "Sillas de comedor", image: "https://lh3.googleusercontent.com/d/3", distance: "4.8 km", owner: "Carlos R.", points: 45 },
-    { id: 4, title: "Curso de Inglés Básico", category: "Servicios", looking_for: "Clases de Guitarra", image: "https://lh3.googleusercontent.com/d/4", distance: "0.5 km", owner: "Lucía S.", points: 210 },
-  ];
+  useEffect(() => {
+    fetchItems();
+  }, [selectedCategory]);
+
+  const fetchItems = async () => {
+    setLoading(true);
+    let query = supabase
+      .from('items')
+      .select(`
+        *,
+        profiles:owner_id (username, trust_points)
+      `)
+      .order('created_at', { ascending: false });
+
+    if (selectedCategory !== "Todos") {
+      query = query.eq('category', selectedCategory);
+    }
+
+    const { data, error } = await query;
+    if (error) console.error("Error fetching items:", error);
+    else setItems(data || []);
+    setLoading(false);
+  };
+
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] pb-24">
@@ -71,59 +92,60 @@ export default function Dashboard() {
 
         {/* Feed Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {mockItems.map((item, i) => (
-            <motion.div 
-              key={item.id}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: i * 0.05 }}
-              className="glass group hover:border-emerald-500/40 transition-all duration-300 flex flex-col h-full overflow-hidden"
-            >
-              <div className="relative aspect-square bg-emerald-500/5 group-hover:bg-emerald-500/10 transition-colors duration-500">
-                {/* Fallback pattern for missing images */}
-                <div className="absolute inset-0 flex items-center justify-center opacity-20">
-                   <Recycle className="w-16 h-16 text-emerald-500" />
-                </div>
-                <div className="absolute top-3 left-3 px-3 py-1 glass bg-black/40 text-xs font-bold text-emerald-400 rounded-lg">
-                  {item.category}
-                </div>
-                <div className="absolute bottom-3 right-3 px-3 py-1 glass bg-black/40 text-xs font-bold text-white rounded-lg flex items-center gap-1">
-                  <MapPin className="w-3 h-3 text-emerald-500" />
-                  {item.distance}
-                </div>
-              </div>
-
-              <div className="p-5 flex flex-col flex-1 gap-3">
-                <div className="flex justify-between items-start">
-                  <h3 className="text-xl font-bold font-outfit leading-tight group-hover:text-emerald-400 transition-colors">{item.title}</h3>
-                </div>
-                
-                <div className="flex flex-col gap-1">
-                  <span className="text-[10px] uppercase tracking-widest text-emerald-500 font-bold">Busco a cambio:</span>
-                  <p className="text-neutral-400 font-light text-sm line-clamp-2">{item.looking_for}</p>
+          {loading ? (
+             Array(8).fill(0).map((_, i) => (
+                <div key={i} className="glass h-96 animate-pulse bg-emerald-500/5 rounded-3xl" />
+             ))
+          ) : (
+            items.map((item, i) => (
+              <motion.div 
+                key={item.id}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: i * 0.05 }}
+                className="glass group hover:border-emerald-500/40 transition-all duration-300 flex flex-col h-full overflow-hidden"
+              >
+                <div className="relative aspect-square bg-emerald-500/5 group-hover:bg-emerald-500/10 transition-colors duration-500">
+                  <div className="absolute inset-0 flex items-center justify-center opacity-20">
+                     <Recycle className="w-16 h-16 text-emerald-500" />
+                  </div>
+                  <div className="absolute top-3 left-3 px-3 py-1 glass bg-black/40 text-xs font-bold text-emerald-400 rounded-lg">
+                    {item.category}
+                  </div>
                 </div>
 
-                <div className="mt-auto pt-4 border-t border-emerald-500/10 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-[10px] font-bold text-emerald-400">
-                       {item.owner.split(' ')[0][0]}
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-xs font-bold text-white">{item.owner}</span>
-                      <span className="text-[10px] text-emerald-500/70 font-semibold">{item.points} pts de confianza</span>
-                    </div>
+                <div className="p-5 flex flex-col flex-1 gap-3">
+                  <div className="flex justify-between items-start">
+                    <h3 className="text-xl font-bold font-outfit leading-tight group-hover:text-emerald-400 transition-colors">{item.title}</h3>
                   </div>
                   
-                  <button 
-                    onClick={() => window.open(`https://wa.me/522821234567?text=Hola, vi tu ${item.title} en TruequeMX y me interesa cambiarlo por...`, '_blank')}
-                    className="p-2.5 glass hover:bg-emerald-500/30 text-emerald-400 rounded-xl transition-all"
-                  >
-                    <ExternalLink className="w-5 h-5" />
-                  </button>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[10px] uppercase tracking-widest text-emerald-500 font-bold">Busco a cambio:</span>
+                    <p className="text-neutral-400 font-light text-sm line-clamp-2">{item.looking_for || "Cualquier oferta"}</p>
+                  </div>
+
+                  <div className="mt-auto pt-4 border-t border-emerald-500/10 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-[10px] font-bold text-emerald-400 uppercase">
+                         {item.profiles?.username?.[0] || '?'}
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-xs font-bold text-white">{item.profiles?.username}</span>
+                        <span className="text-[10px] text-emerald-500/70 font-semibold">{item.profiles?.trust_points || 0} pts</span>
+                      </div>
+                    </div>
+                    
+                    <button 
+                      onClick={() => alert("Función de mensajería interna próximamente. Usa WhatsApp por ahora.")}
+                      className="p-2.5 glass hover:bg-emerald-500/30 text-emerald-400 rounded-xl transition-all"
+                    >
+                      <ExternalLink className="w-5 h-5" />
+                    </button>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            ))
+          )}
         </div>
       </main>
     </div>
