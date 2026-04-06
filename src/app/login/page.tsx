@@ -1,21 +1,22 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import { motion } from "framer-motion";
 import { Mail, Lock, LogIn, UserPlus, Recycle } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import React, { useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 
 export default function Login() {
+  const supabase = createClient();
+  const router = useRouter();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [fullName, setFullName] = useState("");
-  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
-  const supabase = createClient();
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,125 +36,103 @@ export default function Login() {
           email,
           password,
           options: {
-            data: {
-              full_name: fullName,
-              username: email.split("@")[0],
-            },
+            emailRedirectTo: `${window.location.origin}/auth/callback`,
           },
         });
         if (error) throw error;
-        alert("¡Registro exitoso! Ya puedes iniciar sesión.");
-        setIsLogin(true);
+        alert("¡Registro exitoso! Revisa tu correo para confirmar tu cuenta.");
       }
     } catch (err: any) {
-      setError(err.message || "Ocurrió un error inesperado.");
+      setError(err.message || "Ocurrió un error inesperado");
     } finally {
       setLoading(false);
     }
   };
 
-
   return (
-    <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center px-6 relative overflow-hidden">
-      <div className="absolute top-0 left-1/2 -ms-[50%] w-full max-w-[1000px] h-96 bg-emerald-500/10 blur-[150px] rounded-full pointer-events-none" />
-      
+    <main className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden bg-[#0a0a0a]">
+      {/* Background Decor */}
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/10 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-500/5 blur-[120px] rounded-full pointer-events-none" />
+
       <motion.div 
-        initial={{ opacity: 0, y: 20, scale: 0.95 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.6 }}
-        className="w-full max-w-md glass p-8 border-emerald-500/20 relative z-10"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="glass max-w-md w-full p-8 md:p-12 relative z-10"
       >
-        <div className="flex flex-col items-center gap-4 mb-10">
-          <Link href="/" className="flex items-center gap-2 group">
-            <Recycle className="w-10 h-10 text-emerald-500 group-hover:rotate-180 transition-transform duration-700" />
-            <span className="text-3xl font-black font-outfit tracking-tight">Trueque<span className="text-emerald-500">MX</span></span>
-          </Link>
+        <div className="flex flex-col items-center gap-4 mb-8">
+          <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
+            <Recycle className="w-8 h-8 text-emerald-400" />
+          </div>
           <div className="text-center">
-            <h2 className="text-2xl font-bold font-outfit text-white">
-              {isLogin ? "¡Hola de nuevo!" : "Crea tu cuenta"}
-            </h2>
-            <p className="text-sm text-neutral-500 font-light mt-1">
-              {isLogin ? "Accede para seguir intercambiando." : "Únete a la economía circular de Veracruz."}
+            <h1 className="text-3xl font-black font-outfit uppercase tracking-tight">TruequeMX</h1>
+            <p className="text-neutral-500 text-sm font-light uppercase tracking-widest mt-1">
+              {isLogin ? "Bienvenido de nuevo" : "Crea tu cuenta local"}
             </p>
           </div>
         </div>
 
-        <form className="space-y-4" onSubmit={handleSubmit}>
-          {error && (
-            <div className="p-3 rounded-xl bg-red-500/20 border border-red-500/30 text-red-300 text-sm font-medium animate-shake">
-              {error}
-            </div>
-          )}
-
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-emerald-500/70 border-emerald-500/20 uppercase tracking-widest pl-1">Email</label>
-            <div className="relative">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500" />
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-4">
+            <div className="relative group">
+              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 group-focus-within:text-emerald-400 transition-colors" />
               <input 
-                type="email" 
                 required
+                type="email" 
+                placeholder="Tu correo electrónico" 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="tu@email.com" 
-                className="w-full bg-neutral-900/50 border border-emerald-500/10 rounded-2xl py-3.5 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all font-light"
+                className="w-full bg-neutral-950/50 border border-emerald-500/10 rounded-2xl py-4 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all font-light"
               />
             </div>
-          </div>
 
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-emerald-500/70 border-emerald-500/20 uppercase tracking-widest pl-1">Contraseña</label>
-            <div className="relative">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500" />
+            <div className="relative group">
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 group-focus-within:text-emerald-400 transition-colors" />
               <input 
-                type="password" 
                 required
+                type="password" 
+                placeholder="Tu contraseña" 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••" 
-                className="w-full bg-neutral-900/50 border border-emerald-500/10 rounded-2xl py-3.5 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all font-light"
+                className="w-full bg-neutral-950/50 border border-emerald-500/10 rounded-2xl py-4 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all font-light"
               />
             </div>
           </div>
 
-          {!isLogin && (
-             <div className="space-y-2">
-               <label className="text-xs font-bold text-emerald-500/70 border-emerald-500/20 uppercase tracking-widest pl-1">Nombre Completo</label>
-               <input 
-                 type="text" 
-                 required
-                 value={fullName}
-                 onChange={(e) => setFullName(e.target.value)}
-                 placeholder="Ej. Juan Pérez" 
-                 className="w-full bg-neutral-900/50 border border-emerald-500/10 rounded-2xl py-3.5 px-4 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all font-light"
-               />
-             </div>
+          {error && (
+            <motion.div 
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm font-medium"
+            >
+              {error}
+            </motion.div>
           )}
 
           <button 
-            type="submit"
             disabled={loading}
-            className="w-full bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-[#0a0a0a] font-bold rounded-2xl py-4 transition-all shadow-[0_0_25px_rgba(16,185,129,0.25)] hover:scale-[1.02] active:scale-[0.98] mt-6 flex items-center justify-center gap-2"
+            className="w-full py-4 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-[#0a0a0a] font-bold rounded-2xl transition-all shadow-[0_0_20px_rgba(16,185,129,0.2)] flex items-center justify-center gap-2"
           >
-            {loading ? (
-              <div className="w-5 h-5 border-2 border-[#0a0a0a]/30 border-t-[#0a0a0a] rounded-full animate-spin" />
-            ) : (
-              <>
-                {isLogin ? <LogIn className="w-5 h-5" /> : <UserPlus className="w-5 h-5" />}
-                {isLogin ? "Iniciar Sesión" : "Registrarse"}
-              </>
-            )}
+            {loading ? "Procesando..." : isLogin ? "Iniciar Sesión" : "Crear Cuenta"}
+            {isLogin ? <LogIn className="w-5 h-5" /> : <UserPlus className="w-5 h-5" />}
           </button>
         </form>
 
-        <div className="mt-8 text-center">
+        <div className="mt-8 pt-8 border-t border-emerald-500/5 text-center">
           <button 
             onClick={() => setIsLogin(!isLogin)}
-            className="text-neutral-400 text-sm font-medium hover:text-emerald-500 transition-colors"
+            className="text-neutral-500 hover:text-emerald-400 transition-colors text-sm font-medium"
           >
-            {isLogin ? "¿No tienes cuenta? Registrate aquí" : "¿Ya tienes cuenta? Inicia sesión"}
+            {isLogin ? "¿No tienes cuenta? Regístrate aquí" : "¿Ya tienes cuenta? Inicia sesión"}
           </button>
         </div>
+
+        <div className="mt-6">
+          <Link href="/" className="text-[10px] uppercase tracking-[0.2em] text-neutral-600 hover:text-white transition-colors block text-center">
+            Volver al inicio
+          </Link>
+        </div>
       </motion.div>
-    </div>
+    </main>
   );
 }

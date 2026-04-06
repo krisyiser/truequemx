@@ -1,14 +1,17 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import { motion } from "framer-motion";
 import { Search, Filter, Plus, MapPin, Recycle, ExternalLink, Heart } from "lucide-react";
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@/utils/supabase/client";
 
 const CATEGORIES = ["Hogar", "Herramientas", "Ropa", "Servicios", "Otros"];
 
 export default function Dashboard() {
+  const supabase = createClient();
   const [selectedCategory, setSelectedCategory] = useState("Todos");
   const [searchQuery, setSearchQuery] = useState("");
   const [items, setItems] = useState<any[]>([]);
