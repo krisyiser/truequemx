@@ -20,7 +20,9 @@ export async function updateSession(request: NextRequest) {
         setAll(cookiesToSet: any[]) {
           cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
           supabaseResponse = NextResponse.next({
-            request,
+            request: {
+              headers: request.headers,
+            }
           })
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
@@ -30,18 +32,23 @@ export async function updateSession(request: NextRequest) {
     }
   )
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  // Use getSession first, then getUser for better resilience
+  const { data: { session } } = await supabase.auth.getSession();
+  const user = session?.user;
 
-  if (
-    !user &&
-    !request.nextUrl.pathname.startsWith('/login') &&
-    !request.nextUrl.pathname.startsWith('/auth') &&
-    request.nextUrl.pathname !== '/'
-  ) {
+  const isAuthPage = request.nextUrl.pathname.startsWith('/login') || request.nextUrl.pathname.startsWith('/auth');
+  const isRootPage = request.nextUrl.pathname === '/';
+  
+  if (!user && !isAuthPage && !isRootPage) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
+    return NextResponse.redirect(url)
+  }
+
+  // If user is authenticated and tries to access login, redirect to dashboard
+  if (user && isAuthPage) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/dashboard'
     return NextResponse.redirect(url)
   }
 
