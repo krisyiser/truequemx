@@ -1,7 +1,5 @@
 "use client";
 
-export const dynamic = "force-dynamic";
-
 import { motion } from "framer-motion";
 import { Search, Filter, Plus, MapPin, Recycle, ExternalLink, Heart } from "lucide-react";
 import Link from "next/link";
